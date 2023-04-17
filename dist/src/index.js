@@ -30,12 +30,12 @@ const express_1 = __importDefault(require("express"));
 const dotenv = __importStar(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 dotenv.config();
-const playlist_router_1 = require("./playlists/playlist.router");
-const PORT = parseInt('8000', 10);
+const payment_router_1 = require("./payment/payment.router");
+const PORT = 8080;
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
-app.use('/api/playlist', playlist_router_1.playlistRouter);
+app.use('/api/payment', payment_router_1.paymentRouter);
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
 });
