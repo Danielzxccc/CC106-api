@@ -3,14 +3,14 @@ import * as dotenv from 'dotenv'
 import cors from 'cors'
 dotenv.config()
 
-import { playlistRouter } from './playlists/playlist.router'
-const PORT: number = parseInt('8000' as string, 10)
+import { paymentRouter } from './payment/payment.router'
+const PORT: number = 8080
 
 const app = express()
 app.use(cors())
 app.use(express.json())
 
-app.use('/api/playlist', playlistRouter)
+app.use('/api/payment', paymentRouter)
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`)
