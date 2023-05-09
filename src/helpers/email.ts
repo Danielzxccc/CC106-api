@@ -12,7 +12,6 @@ const transporter = createTransport({
 })
 
 export async function sendInvoice(toEmail: string, invoice: string) {
-  console.log(process.env.EMAIL as string)
   await transporter.sendMail({
     from: 'no-reply-capturego@gmail.com',
     to: toEmail,

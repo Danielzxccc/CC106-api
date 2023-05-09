@@ -46,7 +46,6 @@ const transporter = (0, nodemailer_1.createTransport)({
 });
 function sendInvoice(toEmail, invoice) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(process.env.EMAIL);
         yield transporter.sendMail({
             from: 'no-reply-capturego@gmail.com',
             to: toEmail,

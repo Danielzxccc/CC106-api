@@ -19,7 +19,6 @@ const stripe = new stripe_1.default(process.env.STRIPE_SECRET_KEY, {
 });
 const express_1 = __importDefault(require("express"));
 const reservation_service_1 = require("../reservation/reservation.service");
-const email_1 = require("../helpers/email");
 exports.paymentRouter = express_1.default.Router();
 exports.paymentRouter.post('/create-checkout-session', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { hour, priceid, date, email } = req.body;
@@ -70,7 +69,7 @@ exports.paymentRouter.post('/save', (req, res) => __awaiter(void 0, void 0, void
             timerange,
             product_id,
         });
-        yield (0, email_1.sendInvoice)(session.customer_email, invoice.hosted_invoice_url);
+        // await sendInvoice(session.customer_email, invoice.hosted_invoice_url)
         res.status(201).json({
             invoice_link: invoice.hosted_invoice_url,
             details: createReservation,

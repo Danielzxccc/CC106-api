@@ -69,7 +69,7 @@ paymentRouter.post('/save', async (req: Request, res: Response) => {
       product_id,
     })
 
-    await sendInvoice(session.customer_email, invoice.hosted_invoice_url)
+    // await sendInvoice(session.customer_email, invoice.hosted_invoice_url)
 
     res.status(201).json({
       invoice_link: invoice.hosted_invoice_url,
