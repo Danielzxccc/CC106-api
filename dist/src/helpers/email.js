@@ -47,10 +47,10 @@ const transporter = (0, nodemailer_1.createTransport)({
 function sendInvoice(toEmail, invoice) {
     return __awaiter(this, void 0, void 0, function* () {
         yield transporter.sendMail({
-            from: 'no-reply-capturego@gmail.com',
+            from: 'danie.araojo022@gmail.com',
             to: toEmail,
             subject: 'Your invoice',
-            html: `<p>Here's your invoice ${invoice}</p>`,
+            html: `<h1>Here's your invoice Please go to this schedule :</h1><br /><p>${invoice}</p>`,
         });
     });
 }

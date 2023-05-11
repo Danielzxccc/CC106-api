@@ -13,9 +13,9 @@ const transporter = createTransport({
 
 export async function sendInvoice(toEmail: string, invoice: string) {
   await transporter.sendMail({
-    from: 'no-reply-capturego@gmail.com',
+    from: 'danie.araojo022@gmail.com',
     to: toEmail,
     subject: 'Your invoice',
-    html: `<p>Here's your invoice ${invoice}</p>`,
+    html: `<h1>Here's your invoice Please go to this schedule :</h1><br /><p>${invoice}</p>`,
   })
 }
