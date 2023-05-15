@@ -32,6 +32,10 @@ exports.paymentRouter.post('/create-checkout-session', (req, res) => __awaiter(v
                     quantity: 1,
                 },
             ],
+            metadata: {
+                schedule: hour,
+                date,
+            },
             invoice_creation: { enabled: true },
             client_reference_id: 'shit',
             mode: 'payment',
@@ -45,10 +49,12 @@ exports.paymentRouter.post('/create-checkout-session', (req, res) => __awaiter(v
         });
     }
 }));
-exports.paymentRouter.get('/products', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.paymentRouter.get('/payments', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const products = yield stripe.invoices.retrieve('in_1MxtYmLZfLpJv2G9aCj75XeX');
-        res.json(products);
+        const paymentIntents = yield stripe.paymentIntents.list({ limit: 20 });
+        const succeededPaymentIntents = paymentIntents.data.filter((paymentIntent) => paymentIntent.metadata.productname !== undefined);
+        res.status(200).json(succeededPaymentIntents);
+        // const product = await stripe.products.retrieve()
     }
     catch (error) {
         res.status(500).json({ error: error.message });
@@ -60,6 +66,17 @@ exports.paymentRouter.post('/save', (req, res) => __awaiter(void 0, void 0, void
         const session = yield stripe.checkout.sessions.retrieve(session_id);
         // Retrieve the invoice associated with the payment intent
         const invoice = yield stripe.invoices.retrieve(session.invoice);
+        const product = invoice.lines.data[0].price.product;
+        const retrieveProduct = yield stripe.products.retrieve(product);
+        const productname = retrieveProduct.name;
+        // update payment intent
+        yield stripe.paymentIntents.update(invoice.payment_intent, {
+            metadata: {
+                dateofreservation,
+                timerange,
+                productname,
+            },
+        });
         const checkDuplicate = yield (0, reservation_service_1.get)(product_id, dateofreservation, timerange);
         if (checkDuplicate.length)
             return res
@@ -70,7 +87,10 @@ exports.paymentRouter.post('/save', (req, res) => __awaiter(void 0, void 0, void
             timerange,
             product_id,
         });
-        yield (0, email_1.sendInvoice)(session.customer_email, invoice.hosted_invoice_url);
+        yield (0, email_1.sendInvoice)(session.customer_email, invoice.hosted_invoice_url, {
+            date: dateofreservation,
+            time: timerange,
+        });
         res.status(201).json({
             invoice_link: invoice.hosted_invoice_url,
             details: createReservation,

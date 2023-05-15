@@ -44,13 +44,16 @@ const transporter = (0, nodemailer_1.createTransport)({
         pass: process.env.EMAIL_PASSWORD,
     },
 });
-function sendInvoice(toEmail, invoice) {
+function sendInvoice(toEmail, invoice, schedule) {
     return __awaiter(this, void 0, void 0, function* () {
         yield transporter.sendMail({
             from: 'danie.araojo022@gmail.com',
             to: toEmail,
             subject: 'Your invoice',
-            html: `<h1>Here's your invoice Please go to this schedule :</h1><br /><p>${invoice}</p>`,
+            html: `
+    <h1>Here's your invoice Please go to this schedule :</h1>
+    <h2>${schedule.date} ${schedule.time}</h2>
+    <p>${invoice}</p>`,
         });
     });
 }

@@ -21,6 +21,10 @@ paymentRouter.post(
             quantity: 1,
           },
         ],
+        metadata: {
+          schedule: hour,
+          date,
+        },
         invoice_creation: { enabled: true },
         client_reference_id: 'shit',
         mode: 'payment',
@@ -35,12 +39,15 @@ paymentRouter.post(
   }
 )
 
-paymentRouter.get('/products', async (req: Request, res: Response) => {
+paymentRouter.get('/payments', async (req: Request, res: Response) => {
   try {
-    const products = await stripe.invoices.retrieve(
-      'in_1MxtYmLZfLpJv2G9aCj75XeX'
+    const paymentIntents = await stripe.paymentIntents.list({ limit: 20 })
+    const succeededPaymentIntents = paymentIntents.data.filter(
+      (paymentIntent) => paymentIntent.metadata.productname !== undefined
     )
-    res.json(products)
+    res.status(200).json(succeededPaymentIntents)
+
+    // const product = await stripe.products.retrieve()
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
@@ -56,6 +63,22 @@ paymentRouter.post('/save', async (req: Request, res: Response) => {
     // Retrieve the invoice associated with the payment intent
     const invoice = await stripe.invoices.retrieve(session.invoice as string)
 
+    const product = invoice.lines.data[0].price.product
+
+    const retrieveProduct = await stripe.products.retrieve(product as string)
+
+    const productname = retrieveProduct.name
+
+    // update payment intent
+
+    await stripe.paymentIntents.update(invoice.payment_intent as string, {
+      metadata: {
+        dateofreservation,
+        timerange,
+        productname,
+      },
+    })
+
     const checkDuplicate = await get(product_id, dateofreservation, timerange)
 
     if (checkDuplicate.length)
@@ -69,7 +92,10 @@ paymentRouter.post('/save', async (req: Request, res: Response) => {
       product_id,
     })
 
-    await sendInvoice(session.customer_email, invoice.hosted_invoice_url)
+    await sendInvoice(session.customer_email, invoice.hosted_invoice_url, {
+      date: dateofreservation,
+      time: timerange,
+    })
 
     res.status(201).json({
       invoice_link: invoice.hosted_invoice_url,

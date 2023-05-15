@@ -11,11 +11,23 @@ const transporter = createTransport({
   },
 })
 
-export async function sendInvoice(toEmail: string, invoice: string) {
+type Schedule = {
+  date: string
+  time: string
+}
+
+export async function sendInvoice(
+  toEmail: string,
+  invoice: string,
+  schedule: Schedule
+) {
   await transporter.sendMail({
     from: 'danie.araojo022@gmail.com',
     to: toEmail,
     subject: 'Your invoice',
-    html: `<h1>Here's your invoice Please go to this schedule :</h1><br /><p>${invoice}</p>`,
+    html: `
+    <h1>Here's your invoice Please go to this schedule :</h1>
+    <h2>${schedule.date} ${schedule.time}</h2>
+    <p>${invoice}</p>`,
   })
 }
