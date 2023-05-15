@@ -60,6 +60,74 @@ exports.paymentRouter.get('/payments', (req, res) => __awaiter(void 0, void 0, v
         res.status(500).json({ error: error.message });
     }
 }));
+exports.paymentRouter.get('/graph', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const paymentIntents = yield stripe.paymentIntents.list({ limit: 20 });
+        const succeededPaymentIntents = paymentIntents.data.filter((paymentIntent) => paymentIntent.metadata.productname !== undefined);
+        const dataChart = {
+            January: 0,
+            February: 0,
+            March: 0,
+            April: 0,
+            May: 0,
+            June: 0,
+            July: 0,
+            August: 0,
+            September: 0,
+            October: 0,
+            November: 0,
+            December: 0,
+        };
+        succeededPaymentIntents.forEach((element) => {
+            const date = new Date(element.metadata.dateofreservation);
+            const month = date.getMonth();
+            switch (month) {
+                case 0:
+                    dataChart.January = dataChart.January + 1;
+                    break;
+                case 1:
+                    dataChart.February = dataChart.February + 1;
+                    break;
+                case 2:
+                    dataChart.March = dataChart.March + 1;
+                    break;
+                case 3:
+                    dataChart.April = dataChart.April + 1;
+                    break;
+                case 4:
+                    dataChart.May = dataChart.May + 1;
+                    break;
+                case 5:
+                    dataChart.June = dataChart.June + 1;
+                    break;
+                case 6:
+                    dataChart.July = dataChart.July + 1;
+                    break;
+                case 7:
+                    dataChart.August = dataChart.August + 1;
+                    break;
+                case 8:
+                    dataChart.September = dataChart.September + 1;
+                    break;
+                case 9:
+                    dataChart.October = dataChart.October + 1;
+                    break;
+                case 10:
+                    dataChart.November = dataChart.November + 1;
+                    break;
+                case 11:
+                    dataChart.December = dataChart.December + 1;
+                    break;
+                default:
+                    break;
+            }
+        });
+        res.status(200).json(dataChart);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}));
 exports.paymentRouter.post('/save', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { session_id, dateofreservation, timerange, product_id } = req.body;
     try {

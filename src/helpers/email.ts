@@ -26,7 +26,7 @@ export async function sendInvoice(
     to: toEmail,
     subject: 'Your invoice',
     html: `
-    <h1>Here's your invoice Please go to this schedule :</h1>
+    <h1>Here is your schedule. To access your invoice, click on the following link: </h1>
     <h2>${schedule.date} ${schedule.time}</h2>
     <p>${invoice}</p>`,
   })
