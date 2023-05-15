@@ -16,6 +16,8 @@ app.use(cors(corsOptions))
 app.use(cookieParser())
 app.use(express.json())
 
+app.set('trust proxy', 1)
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET_KEY,
