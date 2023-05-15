@@ -19,9 +19,7 @@ app.use(cors(corsOptions))
 app.use(cookieParser())
 app.use(express.json())
 
-interface Store extends session.Store {
-  // add any additional properties or methods you need here
-}
+interface Store extends session.Store {}
 
 const store: Store = new (KnexSessionStore(session))({
   knex: client,

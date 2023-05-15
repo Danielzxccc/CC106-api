@@ -51,4 +51,16 @@ exports.authRouter.get('/refresh', (req, res) => __awaiter(void 0, void 0, void 
         res.json({ token: false });
     }
 }));
+exports.authRouter.delete('/logout', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.session) {
+        req.session.destroy((err) => {
+            if (err) {
+                res.status(400).json({ message: 'unable to logout' });
+            }
+            else {
+                res.status(200).json({ message: 'logout successfully' });
+            }
+        });
+    }
+}));
 //# sourceMappingURL=auth.router.js.map
