@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
+import MemoryStore from 'memorystore'
 dotenv.config()
 
 import { paymentRouter } from './payment/payment.router'
@@ -17,12 +18,16 @@ app.use(cookieParser())
 app.use(express.json())
 
 app.set('trust proxy', 1)
+const store = MemoryStore(session)
 
 app.use(
   session({
     secret: process.env.SESSION_SECRET_KEY,
     resave: false,
     saveUninitialized: false,
+    store: new store({
+      checkPeriod: 86400000, // prune expired entries every 24h
+    }),
     cookie: {
       maxAge: 1000 * 60 * 60 * 24,
     },
