@@ -7,6 +7,7 @@ const cookies_1 = __importDefault(require("cookies"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 function verifyJWT(req, res, next) {
     const splitPem = process.env.CLERK_JWT_VERIFICATION_KEY.match(/.{1,64}/g);
+    console.log(process.env.CLERK_JWT_VERIFICATION_KEY);
     const publicKey = '-----BEGIN PUBLIC KEY-----\n' +
         splitPem.join('\n') +
         '\n-----END PUBLIC KEY-----';

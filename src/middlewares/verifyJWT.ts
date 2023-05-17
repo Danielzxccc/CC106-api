@@ -1,10 +1,11 @@
-import express, { NextFunction } from 'express'
+import { NextFunction } from 'express'
 import type { Request, Response } from 'express'
 import Cookies from 'cookies'
 import jwt from 'jsonwebtoken'
 
 function verifyJWT(req: Request, res: Response, next: NextFunction) {
   const splitPem = process.env.CLERK_JWT_VERIFICATION_KEY.match(/.{1,64}/g)
+  console.log(process.env.CLERK_JWT_VERIFICATION_KEY)
   const publicKey =
     '-----BEGIN PUBLIC KEY-----\n' +
     splitPem.join('\n') +

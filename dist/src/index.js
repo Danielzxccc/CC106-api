@@ -35,14 +35,13 @@ const payment_router_1 = require("./payment/payment.router");
 const reservation_router_1 = require("./reservation/reservation.router");
 const auth_router_1 = require("./auth/auth.router");
 const cors_2 = require("../config/cors");
-const verifyJWT_1 = __importDefault(require("./middlewares/verifyJWT"));
 const PORT = 8080;
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)(cors_2.corsOptions));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
-app.use('/api/payment', verifyJWT_1.default, payment_router_1.paymentRouter);
-app.use('/api/reservation', verifyJWT_1.default, reservation_router_1.reservationRouter);
+app.use('/api/payment', payment_router_1.paymentRouter);
+app.use('/api/reservation', reservation_router_1.reservationRouter);
 app.use('/api/auth', auth_router_1.authRouter);
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);

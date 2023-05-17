@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.reservationRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const reservation_service_1 = require("./reservation.service");
+const verifyJWT_1 = __importDefault(require("../middlewares/verifyJWT"));
 exports.reservationRouter = express_1.default.Router();
 exports.reservationRouter.post('/reserve', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -33,7 +34,7 @@ exports.reservationRouter.post('/reserve', (req, res) => __awaiter(void 0, void 
         });
     }
 }));
-exports.reservationRouter.get('/get/:id', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.reservationRouter.get('/get/:id', verifyJWT_1.default, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const { date } = req.query;
