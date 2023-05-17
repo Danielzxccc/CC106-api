@@ -6,6 +6,7 @@ import express from 'express'
 import type { Request, Response } from 'express'
 import { create, get } from '../reservation/reservation.service'
 import { sendInvoice } from '../helpers/email'
+import { CustomRequest } from '../auth/auth.router'
 export const paymentRouter = express.Router()
 
 paymentRouter.post(
@@ -39,7 +40,7 @@ paymentRouter.post(
   }
 )
 
-paymentRouter.get('/payments', async (req: Request, res: Response) => {
+paymentRouter.get('/payments', async (req: CustomRequest, res: Response) => {
   try {
     const paymentIntents = await stripe.paymentIntents.list({ limit: 20 })
     const succeededPaymentIntents = paymentIntents.data.filter(

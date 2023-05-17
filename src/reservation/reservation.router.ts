@@ -1,6 +1,6 @@
 import express from 'express'
 import type { Request, Response } from 'express'
-import { check, create, get } from './reservation.service'
+import { check, create } from './reservation.service'
 
 export const reservationRouter = express.Router()
 

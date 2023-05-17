@@ -6,10 +6,10 @@ import { Session } from 'express-session'
 export const authRouter = express.Router()
 
 interface SessionData {
-  user: User
+  users: User
 }
 
-interface CustomRequest extends Request {
+export interface CustomRequest extends Request {
   session: Session & Partial<SessionData>
 }
 
@@ -30,10 +30,10 @@ authRouter.post('/login', async (req: CustomRequest, res: Response) => {
         message: 'Unauthorized Access!',
       })
 
-    req.session.user = user[0]
+    req.session.users = user[0]
     res.status(200).json({
       message: 'Success',
-      user: req.session.user,
+      user: req.session.users,
     })
   } catch (error) {
     res.status(400).json({
@@ -43,8 +43,8 @@ authRouter.post('/login', async (req: CustomRequest, res: Response) => {
 })
 
 authRouter.get('/refresh', async (req: CustomRequest, res: Response) => {
-  if (req.session.user) {
-    res.json({ token: true, user: req.session.user })
+  if (req.session.users) {
+    res.json({ token: true, user: req.session.users })
   } else {
     res.json({ token: false })
   }

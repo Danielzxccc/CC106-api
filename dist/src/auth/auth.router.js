@@ -31,10 +31,10 @@ exports.authRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0
                 error: true,
                 message: 'Unauthorized Access!',
             });
-        req.session.user = user[0];
+        req.session.users = user[0];
         res.status(200).json({
             message: 'Success',
-            user: req.session.user,
+            user: req.session.users,
         });
     }
     catch (error) {
@@ -44,8 +44,8 @@ exports.authRouter.post('/login', (req, res) => __awaiter(void 0, void 0, void 0
     }
 }));
 exports.authRouter.get('/refresh', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    if (req.session.user) {
-        res.json({ token: true, user: req.session.user });
+    if (req.session.users) {
+        res.json({ token: true, user: req.session.users });
     }
     else {
         res.json({ token: false });

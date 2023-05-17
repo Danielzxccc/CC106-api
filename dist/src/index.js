@@ -30,35 +30,19 @@ const express_1 = __importDefault(require("express"));
 const dotenv = __importStar(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const express_session_1 = __importDefault(require("express-session"));
-const connect_session_knex_1 = __importDefault(require("connect-session-knex"));
-// import MemoryStore from 'memorystore'
 dotenv.config();
 const payment_router_1 = require("./payment/payment.router");
 const reservation_router_1 = require("./reservation/reservation.router");
 const auth_router_1 = require("./auth/auth.router");
 const cors_2 = require("../config/cors");
-const db_1 = require("../config/db");
+const verifyJWT_1 = __importDefault(require("./middlewares/verifyJWT"));
 const PORT = 8080;
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)(cors_2.corsOptions));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.json());
-const store = new ((0, connect_session_knex_1.default)(express_session_1.default))({
-    knex: db_1.client,
-    tablename: 'sessions', // optional, defaults to 'sessions'
-});
-app.use((0, express_session_1.default)({
-    secret: process.env.SESSION_SECRET_KEY,
-    resave: false,
-    saveUninitialized: false,
-    store: store,
-    cookie: {
-        maxAge: 1000 * 60 * 60 * 24,
-    },
-}));
-app.use('/api/payment', payment_router_1.paymentRouter);
-app.use('/api/reservation', reservation_router_1.reservationRouter);
+app.use('/api/payment', verifyJWT_1.default, payment_router_1.paymentRouter);
+app.use('/api/reservation', verifyJWT_1.default, reservation_router_1.reservationRouter);
 app.use('/api/auth', auth_router_1.authRouter);
 app.listen(PORT, () => {
     console.log(`Listening on port ${PORT}`);
