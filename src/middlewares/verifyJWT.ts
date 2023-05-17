@@ -14,6 +14,7 @@ function verifyJWT(req: Request, res: Response, next: NextFunction) {
   const cookies = new Cookies(req, res)
 
   const sessToken = cookies.get('__session')
+  console.log(sessToken)
   if (!sessToken) {
     return res.status(401).json({ error: true, message: 'Unauthorized' })
   }

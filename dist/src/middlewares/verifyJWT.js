@@ -13,6 +13,7 @@ function verifyJWT(req, res, next) {
         '\n-----END PUBLIC KEY-----';
     const cookies = new cookies_1.default(req, res);
     const sessToken = cookies.get('__session');
+    console.log(sessToken);
     if (!sessToken) {
         return res.status(401).json({ error: true, message: 'Unauthorized' });
     }
