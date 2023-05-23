@@ -51,10 +51,10 @@ exports.paymentRouter.post('/create-checkout-session', (req, res) => __awaiter(v
 }));
 exports.paymentRouter.get('/retrieve', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const paymentIntents = yield stripe.paymentIntents.list({ limit: 20 });
-        const succeededPaymentIntents = paymentIntents.data.filter((paymentIntent) => paymentIntent.metadata.productname !== undefined);
-        res.status(200).json(succeededPaymentIntents);
-        // const product = await stripe.products.retrieve()
+        const { session_id } = req.query;
+        const session = yield stripe.checkout.sessions.retrieve(session_id);
+        const invoice = yield stripe.invoices.retrieve(session.invoice);
+        res.status(200).json(invoice);
     }
     catch (error) {
         res.status(500).json({ error: error.message });

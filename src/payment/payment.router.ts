@@ -42,13 +42,12 @@ paymentRouter.post(
 
 paymentRouter.get('/retrieve', async (req: CustomRequest, res: Response) => {
   try {
-    const paymentIntents = await stripe.paymentIntents.list({ limit: 20 })
-    const succeededPaymentIntents = paymentIntents.data.filter(
-      (paymentIntent) => paymentIntent.metadata.productname !== undefined
+    const { session_id } = req.query
+    const session = await stripe.checkout.sessions.retrieve(
+      session_id as string
     )
-    res.status(200).json(succeededPaymentIntents)
-
-    // const product = await stripe.products.retrieve()
+    const invoice = await stripe.invoices.retrieve(session.invoice as string)
+    res.status(200).json(invoice)
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
