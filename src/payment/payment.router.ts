@@ -29,7 +29,7 @@ paymentRouter.post(
         invoice_creation: { enabled: true },
         client_reference_id: 'shit',
         mode: 'payment',
-        success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}&hour=${hour}&date=${date}&price=${priceid}`,
+        success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
       })
       res.json(session)
     } catch (error) {
@@ -40,7 +40,7 @@ paymentRouter.post(
   }
 )
 
-paymentRouter.get('/payments', async (req: CustomRequest, res: Response) => {
+paymentRouter.get('/retrieve', async (req: CustomRequest, res: Response) => {
   try {
     const paymentIntents = await stripe.paymentIntents.list({ limit: 20 })
     const succeededPaymentIntents = paymentIntents.data.filter(
@@ -127,53 +127,51 @@ paymentRouter.get('/graph', async (req: Request, res: Response) => {
 })
 
 paymentRouter.post('/save', async (req: Request, res: Response) => {
-  const { session_id, dateofreservation, timerange, product_id } = req.body
+  const event = req.body
   try {
-    const session = await stripe.checkout.sessions.retrieve(
-      session_id as string
-    )
+    switch (event.type) {
+      case 'checkout.session.completed':
+        const checkout = event.data.object
 
-    // Retrieve the invoice associated with the payment intent
-    const invoice = await stripe.invoices.retrieve(session.invoice as string)
+        const invoice = await stripe.invoices.retrieve(
+          checkout.invoice as string
+        )
+        const product_id = invoice.lines.data[0].price?.id
 
-    const product = invoice.lines.data[0].price.product
+        const checkDuplicate = await get(
+          product_id,
+          checkout.metadata.date,
+          checkout.metadata.schedule
+        )
 
-    const retrieveProduct = await stripe.products.retrieve(product as string)
+        if (checkDuplicate.length)
+          return res
+            .status(409)
+            .json({ error: true, message: 'The Schedule was already taken' })
 
-    const productname = retrieveProduct.name
+        await sendInvoice(invoice.customer_email, invoice.hosted_invoice_url, {
+          date: checkout.metadata.schedule,
+          time: checkout.metadata.date,
+        })
 
-    // update payment intent
+        await create({
+          dateofreservation: checkout.metadata.date,
+          timerange: checkout.metadata.schedule,
+          product_id: product_id as string,
+        })
 
-    await stripe.paymentIntents.update(invoice.payment_intent as string, {
-      metadata: {
-        dateofreservation,
-        timerange,
-        productname,
-      },
-    })
+        break
+      case 'payment_method.attached':
+        const paymentMethod = event.data.object
+        console.log(paymentMethod)
 
-    const checkDuplicate = await get(product_id, dateofreservation, timerange)
+        break
+      // ... handle other event types
+      default:
+        console.log(`Unhandled event type ${event.type}`)
+    }
 
-    if (checkDuplicate.length)
-      return res
-        .status(409)
-        .json({ error: true, message: 'The Schedule was already taken' })
-
-    const createReservation = await create({
-      dateofreservation,
-      timerange,
-      product_id,
-    })
-
-    await sendInvoice(session.customer_email, invoice.hosted_invoice_url, {
-      date: dateofreservation,
-      time: timerange,
-    })
-
-    res.status(201).json({
-      invoice_link: invoice.hosted_invoice_url,
-      details: createReservation,
-    })
+    res.status(201).json(event)
   } catch (error) {
     res.status(500).json({ error: error.message })
   }

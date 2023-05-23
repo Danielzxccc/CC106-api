@@ -39,7 +39,7 @@ exports.paymentRouter.post('/create-checkout-session', (req, res) => __awaiter(v
             invoice_creation: { enabled: true },
             client_reference_id: 'shit',
             mode: 'payment',
-            success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}&hour=${hour}&date=${date}&price=${priceid}`,
+            success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
         });
         res.json(session);
     }
@@ -49,7 +49,7 @@ exports.paymentRouter.post('/create-checkout-session', (req, res) => __awaiter(v
         });
     }
 }));
-exports.paymentRouter.get('/payments', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.paymentRouter.get('/retrieve', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const paymentIntents = yield stripe.paymentIntents.list({ limit: 20 });
         const succeededPaymentIntents = paymentIntents.data.filter((paymentIntent) => paymentIntent.metadata.productname !== undefined);
@@ -129,40 +129,38 @@ exports.paymentRouter.get('/graph', (req, res) => __awaiter(void 0, void 0, void
     }
 }));
 exports.paymentRouter.post('/save', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { session_id, dateofreservation, timerange, product_id } = req.body;
+    var _a;
+    const event = req.body;
     try {
-        const session = yield stripe.checkout.sessions.retrieve(session_id);
-        // Retrieve the invoice associated with the payment intent
-        const invoice = yield stripe.invoices.retrieve(session.invoice);
-        const product = invoice.lines.data[0].price.product;
-        const retrieveProduct = yield stripe.products.retrieve(product);
-        const productname = retrieveProduct.name;
-        // update payment intent
-        yield stripe.paymentIntents.update(invoice.payment_intent, {
-            metadata: {
-                dateofreservation,
-                timerange,
-                productname,
-            },
-        });
-        const checkDuplicate = yield (0, reservation_service_1.get)(product_id, dateofreservation, timerange);
-        if (checkDuplicate.length)
-            return res
-                .status(409)
-                .json({ error: true, message: 'The Schedule was already taken' });
-        const createReservation = yield (0, reservation_service_1.create)({
-            dateofreservation,
-            timerange,
-            product_id,
-        });
-        yield (0, email_1.sendInvoice)(session.customer_email, invoice.hosted_invoice_url, {
-            date: dateofreservation,
-            time: timerange,
-        });
-        res.status(201).json({
-            invoice_link: invoice.hosted_invoice_url,
-            details: createReservation,
-        });
+        switch (event.type) {
+            case 'checkout.session.completed':
+                const checkout = event.data.object;
+                const invoice = yield stripe.invoices.retrieve(checkout.invoice);
+                const product_id = (_a = invoice.lines.data[0].price) === null || _a === void 0 ? void 0 : _a.id;
+                const checkDuplicate = yield (0, reservation_service_1.get)(product_id, checkout.metadata.date, checkout.metadata.schedule);
+                if (checkDuplicate.length)
+                    return res
+                        .status(409)
+                        .json({ error: true, message: 'The Schedule was already taken' });
+                yield (0, email_1.sendInvoice)(invoice.customer_email, invoice.hosted_invoice_url, {
+                    date: checkout.metadata.schedule,
+                    time: checkout.metadata.date,
+                });
+                yield (0, reservation_service_1.create)({
+                    dateofreservation: checkout.metadata.date,
+                    timerange: checkout.metadata.schedule,
+                    product_id: product_id,
+                });
+                break;
+            case 'payment_method.attached':
+                const paymentMethod = event.data.object;
+                console.log(paymentMethod);
+                break;
+            // ... handle other event types
+            default:
+                console.log(`Unhandled event type ${event.type}`);
+        }
+        res.status(201).json(event);
     }
     catch (error) {
         res.status(500).json({ error: error.message });
